@@ -1,10 +1,12 @@
 import magicbot
+import rev
 import wpilib
 import wpilib.event
 from phoenix6.configs import Slot0Configs
 
 from components.chassis import ChassisComponent, SwerveConfig
-from ids import DioChannel
+from components.intake import Intake
+from ids import DioChannel, SparkId
 from utilities.game import is_red
 from utilities.scalers import rescale_js
 
@@ -14,8 +16,13 @@ class MyRobot(magicbot.MagicRobot):
 
     # Components
     chassis: ChassisComponent
+    intake: Intake
 
     def createObjects(self) -> None:
+        self.intake_motor = rev.SparkMax(
+            SparkId.INTAKE_MOTOR, rev.SparkMax.MotorType.kBrushless
+        )
+
         self.event_loop = wpilib.event.EventLoop()
         self.data_log = wpilib.DataLogManager.getLog()
 
@@ -78,6 +85,11 @@ class MyRobot(magicbot.MagicRobot):
                 drive_x = -drive_x
                 drive_y = -drive_y
             self.chassis.drive_field(drive_x, drive_y, drive_z)
+
+        if self.gamepad.getAButton():
+            self.intake.intake()
+        if self.gamepad.getBButton():
+            self.intake.stow()
 
     def testInit(self) -> None:
         self.chassis.set_coast_in_neutral(True)
